@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Identifikasi Penyakit Daun Padi</title>
+    <!-- Google Fonts & Material Symbols -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+
+    <!-- External CSS File -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <span class="material-symbols-outlined header-icon">eco</span>
+        <h2>Identifikasi Penyakit Daun Padi</h2>
+        <p class="subtitle">Sistem Berbasis Convolutional Neural Network</p>
+      </div>
+
+      <!-- Material Hint Box -->
+      <div class="hint-card">
+        <span class="material-symbols-outlined">photo_camera</span>
+        <div class="hint-text">
+          <strong>Petunjuk Pengambilan Gambar:</strong>
+          <ul>
+            <li>Ambil foto daun dari <b>jarak dekat (close-up)</b>.</li>
+            <li>Pastikan area bercak penyakit terlihat jelas dan fokus.</li>
+          </ul>
+        </div>
+      </div>
+
+      <form action="/predict" method="POST" enctype="multipart/form-data">
+        <div class="file-upload-wrapper">
+          <input
+            type="file"
+            name="file"
+            id="fileInput"
+            accept="image/*"
+            onchange="handleFileSelect(event)"
+            required
+          />
+          <div class="upload-content">
+            <span class="material-symbols-outlined">cloud_upload</span>
+            <div class="upload-text" id="uploadText">
+              Klik atau seret foto daun ke sini
+            </div>
+          </div>
+        </div>
+
+        <!-- Pratinjau Gambar Baru -->
+        <div
+          id="newPreviewContainer"
+          style="display: none"
+          class="preview-card"
+        >
+          <p style="font-size: 13px; font-weight: 500; margin-top: 0">
+            Pratinjau Gambar Baru:
+          </p>
+          <img id="newPreviewImg" class="img-preview" alt="Pratinjau Baru" />
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <span class="material-symbols-outlined">search</span>
+          Identifikasi Penyakit
+        </button>
+      </form>
+
+      {% if error %}
+      <p class="error">{{ error }}</p>
+      {% endif %}
+
+      <!-- Kartu Hasil Prediksi -->
+      {% if label %}
+      <div class="result-card" id="oldResultCard">
+        <img src="{{ image_path }}" class="img-preview" alt="Citra Padi" />
+        <div class="badge-confidence">Keyakinan: {{ confidence }}</div>
+        <h3 class="result-title">{{ label }}</h3>
+        <div class="treatment-box">
+          <strong>Rekomendasi Penanganan:</strong><br />
+          {{ treatment }}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <script>
+      function handleFileSelect(event) {
+        // Sembunyikan kartu hasil prediksi lama
+        const oldResultCard = document.getElementById("oldResultCard");
+        if (oldResultCard) {
+          oldResultCard.style.display = "none";
+        }
+
+        // Tampilkan pratinjau gambar baru secara langsung
+        const file = event.target.files[0];
+        const newPreviewContainer = document.getElementById(
+          "newPreviewContainer",
+        );
+        const newPreviewImg = document.getElementById("newPreviewImg");
+        const uploadText = document.getElementById("uploadText");
+
+        if (file) {
+          uploadText.textContent = `File terpilih: ${file.name}`;
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            newPreviewImg.src = e.target.result;
+            newPreviewContainer.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        } else {
+          newPreviewContainer.style.display = "none";
+          uploadText.textContent = "Klik atau seret foto daun ke sini";
+        }
+      }
+    </script>
+  </body>
+</html>
