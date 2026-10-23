@@ -6,9 +6,9 @@ from flask import Flask, request, render_template
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
-app = Flask(__name__, template_folder='../templates', static_folder='../static')
+app = Flask(__name__)
 
-# Load model (sesuaikan path ke root folder)
+# Memuat model
 MODEL_PATH = 'best_rice_disease_model.h5'
 model = load_model(MODEL_PATH)
 
@@ -67,3 +67,6 @@ def predict():
             confidence=f"{confidence:.2f}%",
             treatment=treatment
         )
+
+if __name__ == '__main__':
+    app.run(debug=True)
