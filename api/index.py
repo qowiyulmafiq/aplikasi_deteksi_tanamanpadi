@@ -6,9 +6,9 @@ from flask import Flask, request, render_template
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
-# 1. Load Model
+# Load model (sesuaikan path ke root folder)
 MODEL_PATH = 'best_rice_disease_model.h5'
 model = load_model(MODEL_PATH)
 
@@ -44,16 +44,12 @@ def predict():
         return render_template('index.html', error='Pilih berkas gambar terlebih dahulu.')
 
     if file:
-        # Baca gambar langsung dari memori (RAM)
         img_bytes = file.read()
         img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
-
-        # Preprocessing Gambar
         img_resized = img.resize((224, 224))
         img_array = image.img_to_array(img_resized) / 255.0
         img_batch = np.expand_dims(img_array, axis=0)
 
-        # Eksekusi Prediksi
         predictions = model.predict(img_batch)
         predicted_class_idx = np.argmax(predictions[0])
         confidence = float(np.max(predictions[0]) * 100)
@@ -61,7 +57,6 @@ def predict():
         label = CLASS_NAMES[predicted_class_idx]
         treatment = TREATMENTS.get(label, '-')
 
-        # Konversi bytes gambar ke Base64 agar bisa dibaca tag <img> HTML
         encoded_img = base64.b64encode(img_bytes).decode('utf-8')
         image_data_url = f"data:image/jpeg;base64,{encoded_img}"
 
@@ -72,6 +67,3 @@ def predict():
             confidence=f"{confidence:.2f}%",
             treatment=treatment
         )
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
